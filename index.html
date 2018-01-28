@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<!--
+	Brent Dixon
+	This is a business contact app called Biztact.
+-->
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" > 
+        
+		<script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery.mobile-1.4.5.min.js"></script>
+		
+		<link rel="stylesheet" type="text/css" href="css/jquery.mobile-1.4.5.min.css" />
+		<link rel="stylesheet" type="text/css" href="css/index.css" />
+        
+		<script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
+		
+		<script>
+			addContact();
+			
+			document.addEventListener("backbutton", onBackKeyDown, false);
+function onBackKeyDown(e) {
+  e.preventDefault();
+}
+			
+			document.addEventListener("deviceready", onDeviceReady, false);
+			
+			function onDeviceReady()
+			{
+				document.addEventListener("backbutton", onBackKeyDown, false);
+			}
+			
+			function onBackKeyDown(e) {
+				e.preventDefault();
+			}
+
+			
+			sessionStorage.setItem('contactSwitch',-1);
+			sessionStorage.setItem('id',-1);
+			sessionStorage.setItem('fName',null);
+			sessionStorage.setItem('lName',null);
+			sessionStorage.setItem('gender',"None");
+			sessionStorage.setItem('dob',null);
+			sessionStorage.setItem('occupation',null);
+			sessionStorage.setItem('company',null);
+			sessionStorage.setItem('cellphone',null);
+			sessionStorage.setItem('workphone',null);
+			sessionStorage.setItem('homephone',null);
+			sessionStorage.setItem('email',null);
+			sessionStorage.setItem('homeaddress',null);
+			sessionStorage.setItem('description',null);
+			sessionStorage.setItem('timeadded',null);
+			
+			
+			sessionStorage.setItem('keyValue',null);
+			
+			sessionStorage.setItem('librarySwitch', -1);
+			
+
+            //windowSwitch = false;
+			//$(document).on("pagebeforecreate", function(event){   //Not camelCase!
+				//$('#results').hide();
+				//$('#listTitle').hide();
+			//});
+			
+			$(document).on("pagebeforeshow", "#libraryPage", function(event){
+				if(sessionStorage.getItem('librarySwitch') == -1)
+				{
+					printParagraph();
+					document.getElementById("listTitle").innerHTML = "<b>Most Recent</b>";
+				}
+				else
+				{
+					sessionStorage.setItem('librarySwitch', -1);
+					var keyVal = document.getElementById("keyParameter").value;
+					filterList(keyVal);
+					document.getElementById("listTitle").innerHTML = "Filter Value: " + keyVal;
+					
+				}
+			});
+			
+			$(document).on("pagebeforeshow", "#addContactPage", function(event){
+				
+				var test = sessionStorage.getItem('contactSwitch');
+				$( "#addContactButton" ).data( "icon", "plus" );
+				
+				if( test  != -1	 )
+				{
+					if (sessionStorage.getItem('dob') != "Not Specified")
+					{
+						var dob = sessionStorage.getItem('dob');
+						month = dob.substring(5,7);
+						day = dob.substring(8,10);
+						year = dob.substring(0,4);
+
+						var d = new Date('"' + month + ' ' + day + ' ' + year + '"').toISOString().substring(0, 10);
+
+						field = document.querySelector('#dateOfBirth');
+						field.value = d;
+
+						//dob = dob.substring(5,7) + '/' + dob.substring(8,10) + '/' + dob.substring(0,4);
+						//alert(d);
+					}
+					
+					document.getElementById("addContactButton").innerHTML = "Update Contact";
+					if (sessionStorage.getItem('fName') != "Not Specified")
+						document.getElementById("firstName").setAttribute('value',sessionStorage.getItem('fName'));
+					else
+						document.getElementById("firstName").setAttribute('value',"");
+					if (sessionStorage.getItem('lName') != "Not Specified")
+					document.getElementById("lastName").setAttribute('value',sessionStorage.getItem('lName'));
+					else
+						document.getElementById("lastName").setAttribute('value',"");
+					//document.getElementById("dateOfBirth").setAttribute('value',d);
+					if (sessionStorage.getItem('occupation') != "Not Specified")
+						document.getElementById("occupation").setAttribute('value',sessionStorage.getItem('occupation'));
+					else
+						document.getElementById("occupation").setAttribute('value',"");
+					if (sessionStorage.getItem('company') != "Not Specified")
+						document.getElementById("company").setAttribute('value',sessionStorage.getItem('company'));
+					else
+						document.getElementById("company").setAttribute('value',"");
+					if (sessionStorage.getItem('cellphone') != "Not Specified")
+						document.getElementById("cellPhone").setAttribute('value',sessionStorage.getItem('cellphone'));
+					else
+						document.getElementById("cellPhone").setAttribute('value',"");
+					if (sessionStorage.getItem('workphone') != "Not Specified")
+						document.getElementById("workPhone").setAttribute('value',sessionStorage.getItem('workphone'));
+					else
+						document.getElementById("workPhone").setAttribute('value',"");
+					if (sessionStorage.getItem('homephone') != "Not Specified")
+						document.getElementById("homePhone").setAttribute('value',sessionStorage.getItem('homephone'));
+					else
+						document.getElementById("homePhone").setAttribute('value',"");
+					if (sessionStorage.getItem('email') != "Not Specified")
+						document.getElementById("email").setAttribute('value',sessionStorage.getItem('email'));
+					else
+						document.getElementById("email").setAttribute('value',"");
+					if (sessionStorage.getItem('homeaddress') != "Not Specified")
+						document.getElementById("homeAddress").setAttribute('value',sessionStorage.getItem('homeaddress'));
+					else
+						document.getElementById("homeAddress").setAttribute('value',"");
+					if (sessionStorage.getItem('description') != "Not Specified")
+						document.getElementById("description").innerHTML = sessionStorage.getItem('description');
+					else
+						document.getElementById("description").innerHTML = "";
+				}
+				else
+				{
+					//alert("should be blank");
+					document.getElementById("addContactButton").innerHTML = "Add Contact";
+					document.getElementById("firstName").setAttribute('value',"");
+					document.getElementById("lastName").setAttribute('value',"");
+					document.getElementById("dateOfBirth").setAttribute('value',"");
+					document.getElementById("occupation").setAttribute('value',"");
+					document.getElementById("company").setAttribute('value',"");
+					document.getElementById("cellPhone").setAttribute('value',"");
+					document.getElementById("workPhone").setAttribute('value',"");
+					document.getElementById("homePhone").setAttribute('value',"");
+					document.getElementById("email").setAttribute('value',"");
+					document.getElementById("homeAddress").setAttribute('value',"");
+					document.getElementById("description").setAttribute('value',"");
+					document.getElementById("description").innerHTML = sessionStorage.getItem("");
+				}
+			});
+			
+			$(document).on("pagebeforeshow", "#contactPage", function(event){
+				sessionStorage.setItem('contactSwitch',1);
+				document.getElementById("contactName").innerHTML = sessionStorage.getItem('fName') + ' ' + sessionStorage.getItem('lName');
+				document.getElementById("contactTimeAdded").innerHTML = sessionStorage.getItem('timeadded');
+				document.getElementById("contactGender").innerHTML = sessionStorage.getItem('gender');
+				document.getElementById("contactDOB").innerHTML = sessionStorage.getItem('dob');
+				document.getElementById("contactOccupation").innerHTML = sessionStorage.getItem('occupation');
+				document.getElementById("contactCompany").innerHTML = sessionStorage.getItem('company');
+				document.getElementById("contactCell").innerHTML = sessionStorage.getItem('cellphone');
+				document.getElementById("contactWork").innerHTML = sessionStorage.getItem('workphone');
+				document.getElementById("contactHome").innerHTML = sessionStorage.getItem('homephone');
+				document.getElementById("contactEmail").innerHTML = sessionStorage.getItem('email');
+				document.getElementById("contactHomeAddress").innerHTML = sessionStorage.getItem('homeaddress');
+				document.getElementById("contactDescription").innerHTML = sessionStorage.getItem('description');
+			});
+			
+			$(document).on("click", "#searchPane", function(event){
+				sessionStorage.setItem('librarySwitch', 1);
+				window.location = "#libraryPage";
+			});
+            
+		</script>
+		
+		<style type="text/css">
+			body {
+				background-image: url(img/backgroundImg.jpg);
+			}
+			.contactText{
+				text-shadow: 0px 0px #000000;
+				color:#0C090A;
+			}
+		</style>
+		
+		<title>Biztact</title>
+    </head>
+    <body>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<div data-role="page" id="mainPage" class="pageViews">
+			<header data-role="header">
+                <h3>Biztact</h3>
+				<div data-role="navbar">
+                    <ul>
+                        <li><a href="#mainPage" id="addContact" data-icon="plus" style="font-size:8pt; background-color:orange">Add Contact</a></li>
+                        <li><a href="#libraryPage" id="library" data-icon="bars" style="font-size:8pt">Library</a></li>
+                    </ul>
+                </div>
+			</header>
+			
+			<section data-role="content">
+			<div style="margin:0 auto">
+                <!--<a href="" id="themeChange" data-role="button" class="ui-btn ui-mini">Start</a>
+                <script>
+                    $("#themeChange").on("click",function(event){
+                        if (themeSwitch == false)
+                        {
+                            $.mobile.changeGlobalTheme("b");
+                            themeSwitch = true;
+                        }
+                        else
+                        {
+                            $.mobile.changeGlobalTheme("a");
+                            themeSwitch = false;
+                        }
+				    });
+                </script>-->
+				<br><br><br><br>
+				<div style="width:120px; margin:0 auto">
+					<p style="font-size:8pt; text-align:center; margin-bottom:0; margin-top:0pt">Add Contact</p>
+					<a href="#addContactPage"><img src="img/addContac.png" id="addContactPane" style="display:block; margin: 0 auto; width:90px; height:90px"></a>
+				</div>
+				<br>
+				<div style="width:120px; margin:0 auto">
+					<div style="width:120px; margin:0 auto">
+						<input style="text-align:center; margin:0" id="keyParameter" type="text" placeholder="Search">
+					</div>
+					<a href="#libraryPage"><img src="img/Search.png" id="searchPane" style="display:block; margin: 0 auto; width:90px; height:90px"></a>
+				</div>
+			</div>
+			</section>
+			
+			<footer data-role="footer" data-position="fixed">
+				<div style="margin:0; bottom:0">
+					<div style="width:60px; float:left; margin:0; margin-left:4px">
+						<a href="" ><img src="img/help.png" id="helpPane" style="width:100%; margin:0"></a>
+						<p style="font-size:8pt ;text-align:center; margin-top:0; margin-bottom:0">Help</p>
+					</div>
+					<div style="width:60px; float:right; margin:0; margin-right:4px">
+						<a href="#settingsPage"><img src="img/settings.png" id="settingsPane" style="width:100%; margin:0"></a>
+						<p style="font-size:8pt; text-align:center; margin-top:0; margin-bottom:0">Settings</p>
+					</div>
+				</div>
+				<div data-role="popup" id="howToContact" class="ui-content" data-arrow="t">
+					<p>Tap here to access Main Page.</p>
+				</div>
+				<div data-role="popup" id="howToLibrary" class="ui-content" data-arrow="t">
+					<p>Tap here to view all Contacts.</p>
+				</div>
+				<div data-role="popup" id="howToAdd" class="ui-content" data-arrow="l">
+					<p>Tap here to add a Contact.</p>
+				</div>
+				<div data-role="popup" id="howToSearch" class="ui-content" data-arrow="l">
+					<p>Search Contacts Here.</p>
+				</div>
+				<div data-role="popup" id="howToSettings" class="ui-content" data-arrow="r">
+					<p>Click here to change settings.</p>
+				</div>
+				<script>
+					$("#helpPane").on("click", function(e){
+						$("#helpPane").css("background-color","orange");
+						$("#howToContact").popup("open", {"positionTo":"#addContact"});
+						$("#howToContact").on("popupafterclose", function(e){
+							$("#howToLibrary").popup("open", {"positionTo":"#library"});
+							$("#howToLibrary").on("popupafterclose", function(e){
+								$("#howToAdd").popup("open", {"positionTo":"#addContactPane"});
+								$("#howToAdd").on("popupafterclose", function(e){
+									$("#howToSearch").popup("open", {"positionTo":"#searchPane"});
+									$("#howToSearch").on("popupafterclose", function(e){
+										$("#howToSettings").popup("open", {"positionTo":"#settingsPane"});
+										$("#howToSettings").on("popupafterclose", function(e){
+											$("#helpPane").css("background-color","transparent");
+										});
+									});
+								});
+							});
+						});
+					});
+				</script>
+                <h3 style="display:block; background-color:orange; width:100%; margin:0">Biztact</h3>
+			</footer>
+		</div>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<div data-role="page" id="addContactPage">
+
+			<header data-role="header">
+				<h3>Biztact</h3>
+			</header>
+			
+			<section data-role="section">
+				<h3 style="text-align:center; margin-bottom:0">Add Contact</h3>
+				<div style="border:1px; padding:2%; padding-top:0">
+				<form id="check-user" class="ui-body ui-body-a ui-corner-all">
+					<fieldset>
+						<div data-role="fieldcontain">
+							<label style="font-size:10pt" for="">First Name: </label>
+							<input type="text" id="firstName" placeholder="First Name">
+						</div>
+						<div data-role="fieldcontain">
+							<label style="font-size:10pt" for="">Last Name: </label>
+							<input type="text" id="lastName" placeholder="Last Name"> 
+						</div>
+                        <div style="height:125px">
+                            <div style="width:100px; height:125px; float:left">
+                                <fieldset data-role="controlgroup">
+                                <legend style="font-size:10pt; text-align:center">Gender:</legend>
+                                    <label for="male" style="font-size:10pt">Male</label>
+                                    <input type="radio" name="gender" id="male" value="male">
+                                    <label for="female" style="font-size:10pt">Female</label>
+                                    <input type="radio" name="gender" id="female" value="female">
+                                </fieldset>
+                            </div>
+                            <div style="float:left; height:125px">
+                                <div style="float:left; margin-top:6px; margin-left:10px; width:7.5em">
+                                    <label style="font-size:10pt" for="dateOfBirth">Date of Birth: </label>
+                                    <input size="2" type="date" id="dateOfBirth" placeholder="MM/DD/YYYY">			
+                                </div>
+                                <div style="float:left; margin-top:6px; margin-left:10px; width:7.5em">
+                                    <label style="font-size:10pt" for="occupation">Ocupation: </label>
+                                    <input size="2" type="text" id="occupation">			
+                                </div>
+                                <div style="margin-left:10px; clear:both">
+                                    <label style="font-size:10pt" for="company">Company: </label>
+                                    <input size="2" type="text" id="company">			
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top:20px; clear:both">
+                            <div data-role="fieldcontain">
+                                <label style="font-size:10pt" for="">Cell Phone: </label>
+                                <input type="text" id="cellPhone" placeholder="Cell Phone">
+                            </div>
+                            <div data-role="fieldcontain">
+                                <label style="font-size:10pt" for="">Work Phone: </label>
+                                <input type="text" id="workPhone" placeholder="Work Phone">
+                            </div>
+                            <div data-role="fieldcontain">
+                                <label style="font-size:10pt" for="">Home Phone: </label>
+                                <input type="text" id="homePhone" placeholder="Home Phone">
+                            </div>
+                            <div data-role="fieldcontain">
+                                <label style="font-size:10pt" for="">Email: </label>
+                                <input type="text" id="email" placeholder="Email">
+                            </div>
+                            <div data-role="fieldcontain">
+                                <label style="font-size:10pt" for="">Home Address: </label>
+                                <input type="text" id="homeAddress" placeholder="Home Address"> 
+                            </div>
+                            <div data-role="fieldcontain">
+                                <label style="font-size:10pt" for="">Description: </label>
+                                <textarea rows="10" style="width:100%;" id="description" placeholder=""></textarea>
+                            </div>
+                        </div>
+					</fieldset>
+				</form>
+				</div>
+			</section>
+			<footer data-role="footer" data-position="fixed">
+				<div data-role="navbar">
+					<ul>
+						<li><a href="#" id="cancelContactButton" data-icon="minus" style="font-size:8pt">Cancel</a></li>
+						<li><a href="#" id="addContactButton" data-icon="user" style="font-size:8pt">Add Contact</a></li>
+					</ul>
+					<script>
+						if(sessionStorage.getItem('contactSwitch') != -1)
+							if( sessionStorage.getItem('gender') == "Male" )
+								document.getElementById('#male').checked = 1;
+							else if( sessionStorage.getItem('gender') == "Female" )
+								document.getElementById('#female').checked = 1;
+					</script>
+					<script>
+						$("#addContactButton").on("click", function(event){
+							if(sessionStorage.getItem('contactSwitch') == -1)
+							{
+                            	addContact();
+				            	insertContact();
+								window.location = "index.html";
+							}
+							else
+							{
+								updateContact();
+								window.location = "index.html";
+							}
+							
+							sessionStorage.setItem('contactSwitch',-1);
+						});
+						$("#cancelContactButton").on("click", function(event){
+							window.location = "index.html";
+						});
+					</script>
+				</div>
+				<h3 style="display:block; background-color:orange; width:100%; margin:0">Biztact</h3>
+			</footer>
+		</div>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<div data-role="page" id="libraryPage">
+			<div style="width:70%; background-color:silver" data-role="panel" data-display="overlay" id="sortFilterPanel" data-url="sortFilterPanel">
+                <div><label style="font-size:10pt" for=""><h3><b>Sort by</b></h3></label></div>
+                <div style="width:100%;clear:both; margin-left:0; margin-right:0; padding:0; border-style: groove;">
+                    <ul data-role="listview" style="width:100%;margin-left:0; margin-right:0; padding:0">
+                        <li id="sortFirst"><a href=""><p>First Name</p></a></li>
+                        <script>$("#sortFirst").on("click",function(event){
+                                printList("FirstName");
+								$( "#sortFilterPanel" ).panel( "close" );
+                        });</script>
+                        <li id="sortLast"><a href=""><p>Last Name</p></a></li>
+                        <script>$("#sortLast").on("click",function(event){
+                                printList("LastName");
+								$( "#sortFilterPanel" ).panel( "close" );
+                        });</script>
+                        <li><a href=""><p id="sortDOB">Date of Birth</p></a></li>
+                        <script>$("#sortDOB").on("click",function(event){
+                                printList("DOB");
+								$( "#sortFilterPanel" ).panel( "close" );
+                        });</script>
+                        <li><a href=""><p id="sortOccupation">Occupation</p></a></li>
+                        <script>$("#sortOccupation").on("click",function(event){
+                                printList("Occupation");
+								$( "#sortFilterPanel" ).panel( "close" );
+                        });</script>
+                        <li><a href=""><p id="sortCompany">Company</p></a></li>
+                        <script>$("#sortCompany").on("click",function(event){
+                                printList("Company");
+								$( "#sortFilterPanel" ).panel( "close" );
+                        });</script>
+                        <li><a href=""><p id="sortCell">Cell Phone</p></a></li>
+                        <script>$("#sortCell").on("click",function(event){
+                                printList("CellPhone");
+								$( "#sortFilterPanel" ).panel( "close" );
+                        });</script>
+                        <li><a href=""><p id="sortWork">Work Phone</p></a></li>
+                        <script>$("#sortWork").on("click",function(event){
+                                printList("WorkPhone");
+								$( "#sortFilterPanel" ).panel( "close" );
+                        });</script>
+                        <li><a href=""><p id="sortHome">Home Phone</p></a></li>
+                        <script>$("#sortHome").on("click",function(event){
+                                printList("HomePhone");
+								$( "#sortFilterPanel" ).panel( "close" );
+                        });</script>
+                        <li><a href=""><p id="sortEmail">Email</p></a></li>
+                        <script>$("#sortEmail").on("click",function(event){
+                                printList("Email");
+								$( "#sortFilterPanel" ).panel( "close" );
+                        });</script>
+                        <li><a href=""><p id="sortAddress">Address</p></a></li>
+                        <script>$("#sortAddress").on("click",function(event){
+                                printList("HomeAddress");
+								$( "#sortFilterPanel" ).panel( "close" );
+                        });</script>
+				    </ul>
+                </div>
+				
+                <div style="width:100%; margin:0">
+                    <div style="float:left"><label style="font-size:10pt" for=""><h3><b>Filter:</b></h3></label></div>
+                    <div style="float:left; margin-top:5px; margin-left:4px"><input type="text" id="filtVal" placeholder="Filter Value"></div>
+					<div style="float:left; margin-top:2px; margin-left:4px"><a href="" id="filterL" class="ui-btn ui-icon-search ui-btn-icon-notext"></a></div>
+                </div>
+				<script>
+						$(document).on("click", "#filterL", function(event){
+							filterList(document.getElementById("filtVal").value);
+							$( "#sortFilterPanel" ).panel( "close" );
+                        });
+					</script>
+               <div style="width:100%;clear:both; margin-left:0; margin-right:0; padding:0; border-style: groove;">
+                    <ul data-role="listview" style="width:100%;margin-left:0; margin-right:0; padding:0">
+                        <li><a href="" id="filtFirst"><p>Search</p></a></li>
+						<script>$("#filtFirst").on("click",function(event){
+								var keyVal = document.getElementById("filtVal").value;
+								filterList(keyVal);
+								document.getElementById("listTitle").innerHTML = "Filter Value: " + keyVal;
+								$( "#sortFilterPanel" ).panel( "close" );
+                        });</script>
+                         <!--<li><a href="" id="filtLast"><p>Last Name</p></a></li>
+						<script>$("#filt").on("click",function(event){
+                                filterList("LastName");
+                        });</script>
+                        <li><a href="" id="filtMale"><p>Gender: Male</p></a></li>
+						<script>$("#filtMale").on("click",function(event){
+                                filterList("Male");
+                        });</script>
+                        <li><a href="" id="filtFemale"><p>Gender: Female</p></a></li>
+						<script>$("#filtFemale").on("click",function(event){
+                                filterList("Female");
+                        });</script>
+                        <li><a href="" id="filtDOB"><p>Date of Birth</p></a></li>
+						<script>$("#filtDOB").on("click",function(event){
+                                filterList("DOB");
+                        });</script>
+                        <li><a href="" id="filtOccupation"><p>Ocupation</p></a></li>
+						<script>$("#filtOccupation").on("click",function(event){
+                                filterList("Occupation");
+                        });</script>
+                        <li><a href="" id="filtCompany"><p>Company</p></a></li>
+						<script>$("#filtCompany").on("click",function(event){
+                                filterList("Company");
+                        });</script>
+                        <li><a href="" id="filtCell"><p>Cell Phone</p></a></li>
+						<script>$("#filtCell").on("click",function(event){
+                                filterList("CellPhone");
+                        });</script>
+                        <li><a href="" id="filtWork"><p>Work Phone</p></a></li>
+						<script>$("#filtWork").on("click",function(event){
+                                filterList("WorkPhone");
+                        });</script>
+                        <li><a href="" id="filtHome"><p>Home Phone</p></a></li>
+						<script>$("#filtHome").on("click",function(event){
+                                filterList("HomePhone");
+                        });</script>
+                        <li><a href="" id="filtEmail"><p>Email</p></a></li>
+						<script>$("#filtEmail").on("click",function(event){
+                                filterList("Email");
+                        });</script>
+                        <li><a href="" id="filtAddress"><p>Address</p></a></li>
+						<script>$("#filtAddress").on("click",function(event){
+                                filterList("HomeAddress");
+                        });</script>-->
+                    </ul>
+                </div>
+			</div>
+			<script>
+				$(document).on("swiperight", '#libraryPage', '#results', function(e){
+					$( "#sortFilterPanel" ).panel( "open" )
+				});
+			</script>
+			
+			<header data-role="header">
+                <h3>Biztact</h3>
+				<div data-role="navbar">
+                    <ul>
+                        <li><a href="index.html" id="addContact1" data-icon="plus" style="font-size:8pt;">Add Contact</a></li>
+                        <li><a href="#libraryPage" id="library1" data-icon="bars" style="font-size:8pt; background-color:orange">Library</a></li>
+                    </ul>
+                </div>
+			</header>
+			
+			<section data-role="content">
+			<h3 id="listTitle"></h3>
+                <!--<a href="" id="start" data-role="button" class="ui-btn ui-mini">Load Contacts</a>-->
+				<ul data-role="listview" id="results" data-filter="true" data-filter-placeholder="Search">
+                    <!--<script>
+                        /*$("#libraryButton").on("click", function(event){
+                            addContact();
+                            printParagraph();
+						});*/
+						 $("#start").on("click",function(event){
+				            addContact();
+				            printParagraph();
+                            $("#start").hide();
+							//document.getElementById("results").setAttribute("data-filter", true);	
+							//$( "#results" ).attr( 'data-filter', true );
+							//$( "#results" ).data( "filter", true );
+							//$('#results').show();
+							//$('#listTitle').show();
+							 document.getElementById("listTitle").innerHTML = "<b>Most Recent</b>";
+				        });
+                    </script>-->
+				</ul>
+			</section>
+		
+			<footer data-role="footer" data-position="fixed">
+				<div style="margin:0; bottom:0">
+					<div style="width:60px; float:left; margin:0; margin-left:4px">
+						<a href="" ><img src="img/help.png" id="helpPane1" style="width:100%; margin:0"></a>
+						<p style="font-size:8pt ;text-align:center; margin-top:0; margin-bottom:0">Help</p>
+					</div>
+					<div style="width:60px; float:right; margin:0; margin-right:4px">
+						<a href="#settingsPage"><img src="img/settings.png" id="settingsPane1" style="width:100%; margin:0"></a>
+						<p style="font-size:8pt; text-align:center; margin-top:0; margin-bottom:0">Settings</p>
+					</div>
+				</div>
+				<div data-role="popup" id="howToContact1" class="ui-content" data-arrow="t">
+					<p>Tap here to access Main Page.</p>
+				</div>
+				<div data-role="popup" id="howToLibrary1" class="ui-content" data-arrow="t">
+					<p>You're already on this page.</p>
+				</div>
+				<div data-role="popup" id="howToSearch1" class="ui-content" data-arrow="t">
+					<p>Make searches and select a contact for more information.</p>
+				</div>
+				<div data-role="popup" id="howToSearchSwipe" class="ui-content" data-arrow="l">
+					<p>Swipe left-right for advanced search.</p>
+				</div>
+				<div data-role="popup" id="howToSettings1" class="ui-content" data-arrow="r">
+					<p>Click here to change settings.</p>
+				</div>
+				<script>
+					$("#helpPane1").on("click", function(e){
+						$("#helpPane1").css("background-color","orange");
+						$("#howToContact1").popup("open", {"positionTo":"#addContact1"});
+						$("#howToContact1").on("popupafterclose", function(e){
+							$("#howToLibrary1").popup("open", {"positionTo":"#library1"});
+							$("#howToLibrary1").on("popupafterclose", function(e){
+								$("#howToSearch1").popup("open", {"positionTo":"#results"});
+								$("#howToSearch1").on("popupafterclose", function(e){
+									$("#howToSearchSwipe").popup("open", {"positionTo":"#sortFilterPanel"});
+									$("#howToSearchSwipe").on("popupafterclose", function(e){
+										$("#howToSettings1").popup("open", {"positionTo":"#settingsPane1"});
+										$("#howToSettings1").on("popupafterclose", function(e){
+											$("#helpPane1").css("background-color","transparent");
+										});
+									});
+								});
+							});
+						});
+					});
+				</script>
+                <h3 style="display:block; background-color:orange; width:100%; margin:0">Biztact</h3>
+			</footer>
+		</div>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<div data-role="page" id="settingsPage">
+			<header data-role="header">
+				<h3>Biztact</h3>
+			</header>
+			
+			<section data-role="content">
+				<h3 style="margin-top:0; text-align:center">Settings and Options</h3>
+				<br>
+				<label for="soundSwitch">Sounds</label>
+				<input type="switch" data-role="flipswitch" name="soundSwitch" id="soundSwitch">
+				<fieldset data-role="controlgroup">
+					<legend style="font-size:10pt">Choose Theme:</legend>
+					<label for="lightTheme" style="font-size:10pt"><b>Light Theme</b></label>
+					<input type="radio" name="theme" id="lightTheme" checked>
+					<label for="darkTheme" style="font-size:10pt"><b>Dark Theme</b></label>
+					<input type="radio" name="theme" id="darkTheme" value="dark">
+				</fieldset>
+				<br><br>
+				<a href="" id="import" data-role="button" class="ui-btn ui-mini">Import Contacts</a>
+				<a href="" id="export" data-role="button" class="ui-btn ui-mini">Export Contacts</a>
+				<br><br>
+				<a href="" id="about" data-role="button" class="ui-btn ui-mini">About Biztact</a>
+				<script>
+					$("#soundSwitch").on("click",function(event){
+						alert("Whoops. Looks like this feature hasn't been added yet! This is planned for the next version.");
+					});
+					$("#import").on("click",function(event){
+						alert("Whoops. Looks like this feature hasn't been added yet! This is planned for the next version.");
+					});
+					$("#export").on("click",function(event){
+						alert("Whoops. Looks like this feature hasn't been added yet! This is planned for the next version.");
+					});
+					$("#about").on("click",function(event){
+						navigator.notification.alert("Release 1.0 build 1.0.0\n\nbuild timestamp: Tue May 10 2016 23:53:11\n\nCopyright 2016 Dixon Systems All rights reserved.",function(){},'About Biztract','Done');
+					});
+				</script>
+			</section>
+			
+			<footer data-role="footer" data-position="fixed">
+				<div data-role="navbar">
+					<ul>
+						<li><a href="#" data-rel="back" id="cancelSettings" data-icon="back" style="font-size:8pt">Cancel Changes</a></li>
+						<li><a href="#" data-rel="back" id="saveSettings" data-icon="check" style="font-size:8pt">Save Settings</a></li>
+                    </ul>
+                        <script>
+                            $("#saveSettings").on("click",function(event){
+                                if (document.getElementById("darkTheme").checked)
+                                {
+                                    $.mobile.changeGlobalTheme("b");
+                                }
+                                else
+                                {
+                                    $.mobile.changeGlobalTheme("a"); //There are some divs that do not change back from dark theme for some reason.
+                                    //window.location = "index.html";
+                                }
+                            });
+                        </script>
+				</div>
+				<div style="margin:0; bottom:0; background-color:white">
+					<div style="width:60px; float:left; margin:0; margin-left:4px;">
+						<img id="helpPane2" src="img/help.png" style="width:100%; margin:0">
+						<p style="font-size:8pt ;text-align:center; margin-top:0; margin-bottom:0">Help</p>
+					</div>
+					<div style="width:60px; float:right; margin:0; margin-right:4px">
+						<img src="img/settings.png" style="width:100%; margin:0; background-color:orange">
+						<p style="font-size:8pt; text-align:center; margin-top:0; margin-bottom:0">Settings</p>
+					</div>
+				</div>
+				<div data-role="popup" id="howToSounds" class="ui-content" data-arrow="l">
+					<p>Toggle Sounds on or off.</p>
+				</div>
+				<div data-role="popup" id="howToTheme" class="ui-content" data-arrow="t">
+					<p>Select a color/theme here.</p>
+				</div>
+				<div data-role="popup" id="howToImportExport" class="ui-content" data-arrow="t">
+					<p>It is possible to import/export contacts.</p>
+				</div>
+				<div data-role="popup" id="howToCancel" class="ui-content" data-arrow="l">
+					<p>Tap here to cancel changes.</p>
+				</div>
+				<div data-role="popup" id="howToSave" class="ui-content" data-arrow="r">
+					<p>Tap here to save current settings.</p>
+				</div>
+				<script>
+					$("#helpPane2").on("click", function(e){
+						$("#helpPane2").css("background-color","orange");
+						$("#howToSounds").popup("open", {"positionTo":"#soundSwitch"});
+						$("#howToSounds").on("popupafterclose", function(e){
+							$("#howToTheme").popup("open", {"positionTo":"#darkTheme"});
+							$("#howToTheme").on("popupafterclose", function(e){
+								$("#howToImportExport").popup("open", {"positionTo":"#import"});
+								$("#howToImportExport").on("popupafterclose", function(e){
+									$("#howToCancel").popup("open", {"positionTo":"#cancelSettings"});
+									$("#howToCancel").on("popupafterclose", function(e){
+										$("#howToSave").popup("open", {"positionTo":"#saveSettings"});
+										$("#howToSave").on("popupafterclose", function(e){
+											$("#helpPane2").css("background-color","transparent");
+										});
+									});
+								});
+							});
+						});
+					});
+				</script>
+				<h3 style="display:block; background-color:orange; width:100%; margin:0">Biztact</h3>
+			</footer>
+		</div>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<div data-role="page" id="contactPage">
+		<header data-role="header">
+			<h3>Biztact</h3>
+		</header>
+		<section data-role="content">
+			<h3 style="margin-bottom:2px" id="contactName"></h3>
+			<p style="margin-bottom:2px"><b>Personal:</b></p>
+			<div style="border:solid; border-width:1px; margin-left:10px;margin-right:10px; background-color:darkgrey">
+				<table style="width:100%">
+					<tr style="background-color:whitesmoke">
+							<td style="width:35%"><p class="contactText" style="margin-left:6px">Date Added:</p></td>
+							<td><p class="contactText" style="margin-left:6px" id=contactTimeAdded></p></td>
+					</tr>
+					<tr style="background-color:gainsboro">
+							<td style="width:35%"><p class="contactText" style="margin-left:6px">Gender</p></td>
+							<td><p class="contactText" style="margin-left:6px" id="contactGender"></p></td>
+					</tr>
+					<tr style="background-color:whitesmoke">
+							<td><p class="contactText" style="margin-left:6px">DOB</p></td>
+							<td><p class="contactText" style="margin-left:6px" id="contactDOB"></p></td>
+					</tr>
+					<tr style="background-color:gainsboro">
+							<td><p class="contactText"  style="margin-left:6px">Occupation</p></td>
+							<td><p class="contactText" style="margin-left:6px" id="contactOccupation"></p></td>
+					</tr>
+					<tr style="background-color:whitesmoke ">
+							<td><p class="contactText" style="margin-left:6px">Company</p></td>
+							<td><p class="contactText" style="margin-left:6px" id="contactCompany"></p></td>
+					</tr>
+				</table>
+			</div>
+			<p style="margin-bottom:2px"><b>Contact:</b></p>
+			<p style="margin-bottom:0;margin-left:10px; margin-top:0; font-size:9pt">Phone</p>
+			<div style="border:solid; border-width:1px; margin-left:10px; margin-right:10px; background-color:darkgrey">
+				<table style="width:100%">
+					<tr style="background-color:gainsboro">
+							<td style="width:35%"><p class="contactText" style="margin-left:6px">Cell Phone:</p></td>
+							<td><p class="contactText" style="margin-left:6px" id="contactCell"></p></td>
+					</tr>
+					<tr style="background-color:whitesmoke">
+							<td style="width:35%"><p class="contactText" style="margin-left:6px">Home Phone</p></td>
+							<td><p class="contactText" style="margin-left:6px" id="contactHome"></p></td>
+					</tr>
+					<tr style="background-color:gainsboro">
+							<td><p class="contactText" style="margin-left:6px">Work Phone</p></td>
+							<td><p class="contactText" style="margin-left:6px" id="contactWork"></p></td>
+					</tr>
+				</table>
+			</div>
+			<br>
+			<p style="margin-bottom:0;margin-left:10px; margin-top:0; font-size:9pt">Email</p>
+			<div style="background-color:whitesmoke; border:solid; border-width:1px; margin-left:10px; margin-right:10px;">
+				<p class="contactText" style="margin-left:6px" id="contactEmail"></p>
+			</div>
+			<br>
+			<p style="margin-bottom:0;margin-left:10px; margin-top:0; font-size:9pt">Home Address</p>
+			<div style="border:solid; border-width:1px; margin-left:10px; margin-right:10px; background-color:gainsboro">
+				<p class="contactText" style="margin-left:6px" id="contactHomeAddress"></p>
+			</div>
+			<br>
+			<p style="margin-bottom:0;margin-left:10px; margin-top:0; font-size:9pt">Description</p>
+			<div style="border:solid; border-width:1px; margin-left:10px; margin-right:10px; background-color:whitesmoke">
+				<p class="contactText" style="margin-left:6px" id="contactDescription"></p>
+			</div>
+		</section>
+
+		<footer data-role="footer" data-position="fixed">
+			<div data-role="navbar">
+				<ul>
+					<li><a href="#" id="modifyContact" data-icon="user" style="font-size:8pt">Modify Contact</a></li>
+					<li><a href="#" id="deleteContact" data-icon="delete" style="font-size:8pt">Delete Contact</a></li>
+				</ul>
+					<script>
+						$(document).on("click", "#modifyContact", function(e){
+							e.preventDefault();
+							//modifyContact();
+							window.location = "#addContactPage";
+						});
+						$(document).on("click", "#deleteContact", function(event){
+							event.preventDefault();
+							sessionStorage.setItem('contactSwitch',-1);
+							deleteContact(sessionStorage.getItem('id'));
+							window.location = "#libraryPage";
+						});
+					</script>
+			</div>
+			<div style="margin:0; bottom:0">
+				<div style="width:60px; float:left; margin:0; margin-left:4px">
+					<a href="#"><img src="img/back.png" id="backPane" style="width:100%; margin:0"></a>
+					<script>
+						$(document).on("click", "#backPane", function(event){
+							event.preventDefault();
+							sessionStorage.setItem('contactSwitch',-1);
+							window.location = "#libraryPage";
+						});
+					</script>
+					<p style="font-size:8pt ;text-align:center; margin-top:0; margin-bottom:0">Back</p>
+				</div>
+				<div style="width:60px; float:right; margin:0; margin-right:4px">
+					<a href="#settingsPage"><img src="img/settings.png" id="settingsPane" style="width:100%; margin:0"></a>
+					<p style="font-size:8pt; text-align:center; margin-top:0; margin-bottom:0">Settings</p>
+				</div>
+			</div>
+			<h3 style="display:block; background-color:orange; width:100%; margin:0">Biztact</h3>
+		</footer>
+	</div>
+
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+    </body>
+</html>
